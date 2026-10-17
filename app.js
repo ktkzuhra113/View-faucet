@@ -209,59 +209,6 @@ const pages = {
   }
 };
 
-// Random A-ADS rotation. To avoid excessive ad refreshes/invalid impressions, rotate every 5 minutes.
-(() => {
-  const AD_UNITS = [
-    { id: '2458838', url: '//acceptable.a-ads.com/2458838/?size=Adaptive', type: 'adaptive' },
-    { id: '2458844', url: '//ad.a-ads.com/2458844/?size=250x250', type: 'square' },
-    { id: '2458872', url: '//acceptable.a-ads.com/2458872/?size=Adaptive', type: 'adaptive' },
-    { id: '2458873', url: '//acceptable.a-ads.com/2458873/?size=Adaptive', type: 'adaptive' }
-  ];
-  const ROTATE_MS = 5 * 60 * 1000;
-  const chooseUnit = (previous) => {
-    const choices = AD_UNITS.filter((unit) => unit.id !== previous);
-    return choices[Math.floor(Math.random() * choices.length)];
-  };
-  const renderAd = (slot) => {
-    const previous = slot.dataset.currentUnit || '';
-    const unit = chooseUnit(previous);
-    slot.dataset.currentUnit = unit.id;
-    slot.dataset.adUnit = unit.id;
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('data-aa', unit.id);
-    iframe.src = unit.url;
-    iframe.title = 'Advertisement';
-    iframe.loading = 'lazy';
-    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-    iframe.style.cssText = unit.type === 'square'
-      ? 'border:0;padding:0;width:250px;height:250px;max-width:100%;overflow:hidden;display:block;margin:auto'
-      : 'border:0;padding:0;width:70%;max-width:100%;height:90px;overflow:hidden;display:block;margin:auto';
-    slot.replaceChildren(iframe);
-  };
-  document.querySelectorAll('[data-ad-rotation="true"]').forEach((slot) => {
-    renderAd(slot);
-    window.setInterval(() => renderAd(slot), ROTATE_MS);
-  });
-
-  // Add one in-content ad, after the first main content panel or auth card.
-  const content = document.querySelector('.main') || document.querySelector('.auth');
-  if (content) {
-    const anchor = content.querySelector('.panel, .auth-box, .hero, .features, .card');
-    if (anchor) {
-      const middle = document.createElement('section');
-      middle.className = 'site-ad-middle';
-      middle.setAttribute('aria-label', 'Advertisement');
-      const slot = document.createElement('div');
-      slot.className = 'ad-slot';
-      slot.dataset.adRotation = 'true';
-      slot.setAttribute('data-ad-rotation', 'true');
-      middle.appendChild(slot);
-      anchor.insertAdjacentElement('afterend', middle);
-      renderAd(slot);
-      window.setInterval(() => renderAd(slot), ROTATE_MS);
-    }
-  }
-})();
 
 // Footer year labels
 document.querySelectorAll(".current-year").forEach((el) => el.textContent = new Date().getFullYear());

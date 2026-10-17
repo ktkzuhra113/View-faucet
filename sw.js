@@ -1,6 +1,6 @@
 /* Keeps the site usable when the local/hosting server is slow or stuck:
    network first, but after 1.5 s (or on error) the last cached copy is used. */
-const V = "vf-2";
+const V = "vf-1";
 const FILES = ["./", "index.html", "login.html", "signup.html", "forgot.html", "dashboard.html", "faucet.html", "daily.html", "coupon.html", "referral.html", "withdrawal.html", "profile.html", "style.css", "app.js"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(V).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== V).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
