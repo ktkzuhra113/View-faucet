@@ -101,3 +101,19 @@ form .btn.wide{margin-top:22px}
  .toast{bottom:84px}
 }
 @keyframes up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+
+
+/* A-ADS placements: normal document flow, never overlay navigation or content */
+.site-ad-top, .site-ad-bottom { width:100%; box-sizing:border-box; clear:both; position:relative; z-index:1; text-align:center; }
+.site-ad-top { margin: 8px auto 22px; padding: 8px 0; }
+.site-ad-bottom { margin: 30px auto 0; padding: 18px 12px 24px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; border-top:1px solid var(--line); }
+.ad-slot { display:flex; justify-content:center; align-items:center; width:100%; max-width:100%; min-height:0; overflow:hidden; box-sizing:border-box; }
+.ad-slot iframe { max-width:100%; }
+.site-footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; background:var(--ink); color:#d7e8de; padding:18px max(18px,4vw); font-size:13px; box-sizing:border-box; width:100%; clear:both; }
+.app + .site-ad-bottom { margin-top:0; }
+@media(max-width:760px) { .site-ad-top { margin-top:8px; } .site-ad-bottom { padding-bottom:105px; } .site-ad-bottom iframe { max-width:100%; } }
+
+.site-ad-middle { width:100%; box-sizing:border-box; clear:both; position:relative; z-index:1; text-align:center; margin:26px auto; padding:12px 0; }
+.site-ad-middle .ad-slot { min-height:90px; }
+.site-ad-middle iframe { max-width:100%; }
+.site-ad-bottom .ad-slot { margin:4px auto; }

@@ -5,7 +5,7 @@ const MIN_WD = Math.round(0.3 * COINS_PER_DOLLAR); // $0.30 = 3,600 coins
 const FAUCET_REWARD = 25, FAUCET_CD = 5 * 60e3, DAILY_REWARD = 50;
 const REFERRAL_BONUS = 300, COPY_BONUS = 200, COPY_DELAY = 10 * 60e3;
 const COUPON_CODE = "1234567890123", COUPON_REWARD = 400, COUPON_CD = 5 * 3600e3; // change COUPON_CODE to publish a new coupon
-const SITE_URL = "https://view-faucet.netlify.app/";
+const SITE_URL = window.location.origin + window.location.pathname.replace(/[^/]*$/, "");
 const ACC_KEY = "viewfaucet_demo_accounts_coins_v2", SES_KEY = "viewfaucet_demo_session_coins_v2";
 const B58 = "[1-9A-HJ-NP-Za-km-z]";
 const METHODS = [
@@ -161,11 +161,11 @@ const pages = {
     $("link").value = link.href; $("count").textContent = accounts().filter((a) => a.referred_by === u.referral_code).length; $("earn").textContent = `${money(u.referralEarnings)} coins`;
     const status = () => {
       sync(u);
-      if (u.copyLinkRewardPaid) return msg("m", `Your ${COPY_BONUS}-coin copy reward was already paid.`, "ok");
-      if (!u.copyLinkRewardAt) return msg("m", `Copy your link once and get ${COPY_BONUS} coins after 10 minutes.`);
+      if (u.copyLinkRewardPaid) return msg("m", "", "ok");
+      if (!u.copyLinkRewardAt) return msg("m", "", "ok");
       const left = COPY_DELAY - (Date.now() - u.copyLinkRewardAt);
-      if (left > 0) { msg("m", `${COPY_BONUS} coins arrive in ${Math.ceil(left / 60000)} minute(s).`, "ok"); return setTimeout(status, 30000); }
-      u.copyLinkRewardPaid = true; reward(u, COPY_BONUS); save(u); paintWallet(u); msg("m", `${COPY_BONUS} coins added for copying your link!`, "ok"); toast(`+${COPY_BONUS} coins`);
+      if (left > 0) { msg("m", "", "ok"); return setTimeout(status, Math.min(30000, left)); }
+      u.copyLinkRewardPaid = true; reward(u, COPY_BONUS); save(u); paintWallet(u); msg("m", "", "ok");
     };
     status();
     $("copy").onclick = async () => {
@@ -208,3 +208,60 @@ const pages = {
     };
   }
 };
+
+// Random A-ADS rotation. To avoid excessive ad refreshes/invalid impressions, rotate every 5 minutes.
+(() => {
+  const AD_UNITS = [
+    { id: '2458838', url: '//acceptable.a-ads.com/2458838/?size=Adaptive', type: 'adaptive' },
+    { id: '2458844', url: '//ad.a-ads.com/2458844/?size=250x250', type: 'square' },
+    { id: '2458872', url: '//acceptable.a-ads.com/2458872/?size=Adaptive', type: 'adaptive' },
+    { id: '2458873', url: '//acceptable.a-ads.com/2458873/?size=Adaptive', type: 'adaptive' }
+  ];
+  const ROTATE_MS = 5 * 60 * 1000;
+  const chooseUnit = (previous) => {
+    const choices = AD_UNITS.filter((unit) => unit.id !== previous);
+    return choices[Math.floor(Math.random() * choices.length)];
+  };
+  const renderAd = (slot) => {
+    const previous = slot.dataset.currentUnit || '';
+    const unit = chooseUnit(previous);
+    slot.dataset.currentUnit = unit.id;
+    slot.dataset.adUnit = unit.id;
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('data-aa', unit.id);
+    iframe.src = unit.url;
+    iframe.title = 'Advertisement';
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    iframe.style.cssText = unit.type === 'square'
+      ? 'border:0;padding:0;width:250px;height:250px;max-width:100%;overflow:hidden;display:block;margin:auto'
+      : 'border:0;padding:0;width:70%;max-width:100%;height:90px;overflow:hidden;display:block;margin:auto';
+    slot.replaceChildren(iframe);
+  };
+  document.querySelectorAll('[data-ad-rotation="true"]').forEach((slot) => {
+    renderAd(slot);
+    window.setInterval(() => renderAd(slot), ROTATE_MS);
+  });
+
+  // Add one in-content ad, after the first main content panel or auth card.
+  const content = document.querySelector('.main') || document.querySelector('.auth');
+  if (content) {
+    const anchor = content.querySelector('.panel, .auth-box, .hero, .features, .card');
+    if (anchor) {
+      const middle = document.createElement('section');
+      middle.className = 'site-ad-middle';
+      middle.setAttribute('aria-label', 'Advertisement');
+      const slot = document.createElement('div');
+      slot.className = 'ad-slot';
+      slot.dataset.adRotation = 'true';
+      slot.setAttribute('data-ad-rotation', 'true');
+      middle.appendChild(slot);
+      anchor.insertAdjacentElement('afterend', middle);
+      renderAd(slot);
+      window.setInterval(() => renderAd(slot), ROTATE_MS);
+    }
+  }
+})();
+
+// Footer year labels
+document.querySelectorAll(".current-year").forEach((el) => el.textContent = new Date().getFullYear());
